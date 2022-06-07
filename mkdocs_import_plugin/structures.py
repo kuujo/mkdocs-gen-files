@@ -33,7 +33,7 @@ class File:
     def download(self, fs: FileSystem) -> 'File':
         r = requests.get(self.url, allow_redirects=True)
         with fs.open(self.path, 'w') as f:
-            f.write(_strip_badges(r.content.decode('ascii')))
+            f.write(_strip_badges(r.content.decode('utf-8')))
         return self
 
     def is_local(self):
