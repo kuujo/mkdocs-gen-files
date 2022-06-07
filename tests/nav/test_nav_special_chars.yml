@@ -1,8 +1,0 @@
-code: |
-  nav["__init__"] = "a.md"
-  nav["__init__.py"] = "a.md"
-  nav["`hi`"] = "a.md"
-output: |
-  * [\__init__](a.md)
-  * [\__init__.py](a.md)
-  * [\`hi`](a.md)

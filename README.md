@@ -31,9 +31,9 @@ plugins:
 Then create such a script **gen_pages.py** (this is relative to the root, *not* to the *docs* directory).
 
 ```python
-import mkdocs_gen_files
+import mkdocs_import_plugin
 
-with mkdocs_gen_files.open("foo.md", "w") as f:
+with mkdocs_import_plugin.open("foo.md", "w") as f:
     print("Hello, world!", file=f)
 ```
 

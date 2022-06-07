@@ -1,4 +1,0 @@
-code: |
-  nav["Hello"] = "test.md"
-output: |
-  * [Hello](test.md)

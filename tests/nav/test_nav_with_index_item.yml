@@ -1,6 +1,0 @@
-code: |
-  nav["Hello", "World"] = "hello/world.md"
-  nav["Hello"] = "hello/index.md"
-output: |
-  * [Hello](hello/index.md)
-      * [World](hello/world.md)
