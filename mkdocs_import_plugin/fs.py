@@ -24,6 +24,14 @@ class FileSystem:
     """The base directory for `open()` ([docs_dir](https://www.mkdocs.org/user-guide/configuration/#docs_dir))."""
     edit_paths: Mapping[str, Optional[pathlib.Path]]
 
+    def __init__(self, files: Files, config: Config, directory: Optional[str] = None):
+        self._files = collections.ChainMap({}, {pathlib.Path(f.src_path): f for f in files})
+        self.config = config
+        if directory is None:
+            directory = config["docs_dir"]
+        self.directory = directory
+        self.edit_paths = {}
+
     def open(self, name: Path, mode, buffering=-1, encoding=None, *args, **kwargs) -> IO:
         """Open a file under `docs_dir` virtually.
 
@@ -64,14 +72,6 @@ class FileSystem:
     def set_edit_path(self, name: Path, edit_name: Optional[str]) -> None:
         """Choose a file path to use for the edit URI of this file."""
         self.edit_paths[name] = edit_name and str(edit_name)
-
-    def __init__(self, files: Files, config: Config, directory: Optional[str] = None):
-        self._files = collections.ChainMap({}, {pathlib.Path(f.src_path): f for f in files})
-        self.config = config
-        if directory is None:
-            directory = config["docs_dir"]
-        self.directory = directory
-        self.edit_paths = {}
 
     @property
     def files(self) -> Files:

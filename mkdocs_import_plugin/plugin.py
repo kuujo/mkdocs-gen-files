@@ -28,15 +28,15 @@ class ImportPlugin(BasePlugin):
     def on_files(self, files: Files, config: Config) -> Files:
         nav: List[Dict] = config.get('nav')
         imports = get_imports(nav)
-        with FileSystem(files, config, self._dir.name) as fs:
-            asyncio_run(batch_import(fs, imports))
-            return fs.files
+        fs = FileSystem(files, config, self._dir.name)
+        asyncio_run(batch_import(fs, imports))
+        return fs.files
 
     def on_post_build(self, config: Config):
         self._dir.cleanup()
 
 
-def _parse_import(name: str, value: str, path: Path = '') -> Tuple[str, Path]:
+def _parse_import(name: str, value: str, path: Path) -> Tuple[str, Path]:
     """Parses !import statements"""
     elems = value.split(' ')[1:]
     if len(elems) == 1:
@@ -44,7 +44,7 @@ def _parse_import(name: str, value: str, path: Path = '') -> Tuple[str, Path]:
     return elems[0], Path(elems[1])
 
 
-def get_imports(nav: List[Dict], path: Path = '') -> List[Import]:
+def get_imports(nav: List[Dict], path: Path = Path('')) -> List[Import]:
     imports: List[Import] = []
     for index, entry in enumerate(nav):
         if isinstance(entry, str):
@@ -65,7 +65,7 @@ async def batch_import(fs: FileSystem, imports: List[Import]) -> None:
     progress_bar = tqdm.tqdm(total=len(imports), desc=" " * longest_desc)
     for imp_async in asyncio.as_completed([imp.imp(fs) for imp in imports]):
         imp = await imp_async
-        progress_bar.set_description(f"✅ Downloaded {imp.url}".ljust(longest_desc))
+        progress_bar.set_description(f"✅ Downloaded {imp.file.url}".ljust(longest_desc))
         progress_bar.update()
 
 

@@ -51,7 +51,7 @@ class Import:
 
     async def imp(self, editor: FileSystem) -> 'Import':
         await self.file.fetch(editor)
-        self.nav_entry_ptr[self.name] = self.name
+        self.nav_entry_ptr[self.name] = str(self.file.path)
         return self
 
 
