@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from sys import version_info
 from pathlib import Path
 import tempfile
@@ -36,9 +36,12 @@ class ImportPlugin(BasePlugin):
         self._dir.cleanup()
 
 
-def _parse_import(import_stmt: str) -> str:
+def _parse_import(name: str, value: str, path: Path = '') -> Tuple[str, Path]:
     """Parses !import statements"""
-    return import_stmt.split(" ", 1)[1]
+    elems = value.split(' ')[1:]
+    if len(elems) == 1:
+        return value, path / f"{name}.md"
+    return elems[0], Path(elems[1])
 
 
 def get_imports(nav: List[Dict], path: Path = '') -> List[Import]:
@@ -46,12 +49,12 @@ def get_imports(nav: List[Dict], path: Path = '') -> List[Import]:
     for index, entry in enumerate(nav):
         if isinstance(entry, str):
             continue
-        (section, value), = entry.items()
+        (name, value), = entry.items()
         if type(value) is list:
-            imports += get_imports(value, path / section)
+            imports += get_imports(value, path / name)
         elif value.startswith("!import"):
-            import_url = _parse_import(value)
-            imports.append(Import(section, nav[index], File(url=import_url, path=path / f"{section}.md")))
+            import_url, import_path = _parse_import(name, value, path)
+            imports.append(Import(name, nav[index], File(url=import_url, path=import_path)))
     return imports
 
 
