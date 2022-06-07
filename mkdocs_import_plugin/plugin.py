@@ -53,9 +53,31 @@ def get_imports(nav: List[Dict], path: Path = Path('')) -> List[Import]:
         if type(value) is list:
             imports += get_imports(value, path / name)
         elif value.startswith("!import"):
-            import_url, import_path = _parse_import(name, value, path)
-            imports.append(Import(name, nav[index], File(url=import_url, path=import_path)))
+            import_args = value.split(' ')[1:]
+            import_url, import_path, icon, hides = None, None, None, None
+            for import_arg in import_args:
+                if is_param(import_arg, "url"):
+                    import_url = get_arg_value(import_arg, "url")
+                if is_param(import_arg, "path"):
+                    import_path = get_arg_value(import_arg, "path")
+                if is_param(import_arg, "icon"):
+                    icon = get_arg_value(import_arg, "icon")
+                if is_param(import_arg, "hide"):
+                    hides = get_arg_values(import_arg, "hide")
+            imports.append(Import(name, nav[index], File(url=import_url, path=Path(import_path), icon=icon, hide=hides)))
     return imports
+
+
+def is_param(value: str, param: str) -> bool:
+    return value.startswith(f"{param}(") and value.endswith(")")
+
+
+def get_arg_value(value: str, param: str) -> str:
+    return get_arg_values(value, param)[0]
+
+
+def get_arg_values(value: str, param: str) -> List[str]:
+    return value[len(f"{param}("):-1].split(',')
 
 
 async def batch_import(fs: FileSystem, imports: List[Import]) -> None:

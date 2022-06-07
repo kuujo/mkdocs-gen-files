@@ -1,3 +1,4 @@
+from typing import List
 from urllib.parse import urlparse
 from os import path
 
@@ -15,9 +16,11 @@ except ImportError:
 
 
 class File:
-    def __init__(self, url: str, path: Path):
+    def __init__(self, url: str, path: Path, icon: str = None, hide: List[str] = None):
         self.url = url
         self.path = path
+        self.icon = icon
+        self.hide = hide
 
     async def fetch(self, fs: FileSystem) -> 'File':
         if self.is_local():
@@ -33,7 +36,7 @@ class File:
     def download(self, fs: FileSystem) -> 'File':
         r = requests.get(self.url, allow_redirects=True)
         with fs.open(self.path, 'w') as f:
-            f.write(_strip_badges(r.content.decode('utf-8')))
+            f.write(self.format(r.content.decode('utf-8')))
         return self
 
     def is_local(self):
@@ -41,6 +44,24 @@ class File:
         if url_parsed.scheme in ('file', ''):
             return path.exists(url_parsed.path)
         return False
+
+    def format(self, content: str) -> str:
+        content = content[content.find('#'):]
+        header = ""
+        if self.icon or self.hide:
+            header = "---\n"
+        if self.icon:
+            header = header + f"icon: {self.icon}\n"
+        if self.hide:
+            header = header + "hide:\n"
+            hides = []
+            for hide in self.hide:
+                hides.append(f"  - {hide}")
+            header = header + "\n".join(hides) + "\n"
+        if header:
+            header = header + "---\n"
+            content = header + "\n" + content
+        return content
 
 
 class Import:
@@ -53,8 +74,4 @@ class Import:
         await self.file.fetch(editor)
         self.nav_entry_ptr[self.name] = str(self.file.path)
         return self
-
-
-def _strip_badges(content: str) -> str:
-    return content[content.find('#'):]
 
